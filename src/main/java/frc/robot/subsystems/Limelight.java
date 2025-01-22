@@ -10,7 +10,7 @@ import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
 
 public class Limelight extends SubsystemBase {
-  String limelightName;
+  String limelightName = "limelight-front";
   /** Creates a new Limelight. */
   public Limelight() {
   }
@@ -18,14 +18,6 @@ public class Limelight extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-  }
-
-  public void gyroControl(boolean gyro) {
-    if(gyro == true) {
-      limelightName = "limelight-front";
-    } else if (gyro == false){
-      limelightName = "limelight-back";
-    }
   }
     public double limelight_aim_proportional()
   {    
@@ -101,7 +93,6 @@ public class Limelight extends SubsystemBase {
 
   public void limelightTagMode(boolean on) {
     if(on != true) {
-      LimelightHelpers.setLEDMode_ForceOff("limelight-back");
       LimelightHelpers.setLEDMode_ForceOff("limelight-front");
       // LimelightHelpers.setPipelineIndex("limelight-front", 1);
     } else {

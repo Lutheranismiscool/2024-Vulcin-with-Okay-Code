@@ -11,6 +11,9 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -39,6 +42,7 @@ public class Swerve extends SubsystemBase {
                 new SwerveModule(2, Constants.Swerve.Mod2.constants),
                 new SwerveModule(3, Constants.Swerve.Mod3.constants)
         };
+
 
         swerveOdometry = new SwerveDriveOdometry(Constants.Swerve.swerveKinematics, getGyroYaw(), getModulePositions());
 
@@ -75,6 +79,16 @@ public class Swerve extends SubsystemBase {
             this // Reference to this subsystem to set requirements
     );
     }
+
+    StructPublisher<Pose2d> robotPosePublisher = NetworkTableInstance.getDefault()
+    .getStructTopic("/SmartDashboard/Drivetrain/Robot Pose", Pose2d.struct).publish();
+StructPublisher<Pose2d> desiredAlignmentPosePublisher = NetworkTableInstance.getDefault()
+    .getStructTopic("/SmartDashboard/Drivetrain/Desired Alignment Pose", Pose2d.struct).publish();
+StructArrayPublisher<SwerveModuleState> desiredStatesPublisher = NetworkTableInstance.getDefault()
+    .getStructArrayTopic("/SmartDashboard/Drivetrain/Desired States", SwerveModuleState.struct).publish();
+StructArrayPublisher<SwerveModuleState> actualStatesPublisher = NetworkTableInstance.getDefault()
+    .getStructArrayTopic("/SmartDashboard/Drivetrain/Actual States", SwerveModuleState.struct).publish();
+
 
     public ChassisSpeeds getRobotRelativeSpeeds() {
         return Constants.Swerve.swerveKinematics.toChassisSpeeds(
@@ -187,6 +201,10 @@ public class Swerve extends SubsystemBase {
 
     @Override
     public void periodic() {
+        robotPosePublisher.set(getPose());
+        // desiredAlignmentPosePublisher.set();
+        // desiredStatesPublisher.set(getModuleStates());
+        actualStatesPublisher.set(getModuleStates());
         var alliance = DriverStation.getAlliance();
         if (getHeading().getDegrees() >= -90 && getHeading().getDegrees() <= 90) {
             gyroCheck = false;
@@ -222,6 +240,6 @@ public class Swerve extends SubsystemBase {
             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);
         }
 
-    }
+        }
 
 }

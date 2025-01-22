@@ -15,7 +15,7 @@ import frc.lib.util.SwerveModuleConstants;
 
 public final class Constants {
     public static final String canBusName = "*";
-    public static final double stickDeadband = 0.1;
+    public static final double stickDeadband = 0.2;
 
     public static final class Swerve {
         public static final int pigeonID = 1;
@@ -67,6 +67,11 @@ public final class Constants {
         public static final double angleKP = chosenModule.angleKP;
         public static final double angleKI = chosenModule.angleKI;
         public static final double angleKD = chosenModule.angleKD;
+
+        /* Angle Intake Pivot PID Values */
+        public static final double intakePivotKP = 1.0;
+        public static final double intakePivotKI = 0.1;
+        public static final double intakePivotKD = chosenModule.angleKD;
 
         /* Drive Motor PID Values */
         public static final double driveKP = 0.12; 

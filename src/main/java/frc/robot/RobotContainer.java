@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
-import frc.robot.commands.AmpArm;
+// import frc.robot.commands.AmpArm;
 import frc.robot.commands.AutoIntake;
 import frc.robot.commands.AutoShooter;
 import frc.robot.commands.ManualIntake;
@@ -68,12 +68,14 @@ public class RobotContainer {
         private final JoystickButton ArmZero = new JoystickButton(driver, XboxController.Button.kB.value);
         private final JoystickButton PerimeterShot = new JoystickButton(driver, 10);
         private final JoystickButton shootButton = new JoystickButton(driver, XboxController.Button.kA.value);
+        private final JoystickButton alignLButton = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
+        private final JoystickButton alignRButton = new JoystickButton(driver, XboxController.Button.kRightBumper.value);
         private final JoystickButton spit = new JoystickButton(driver, 7);
         private final JoystickButton forceIntake = new JoystickButton(driver, XboxController.Button.kY.value);
-        private final JoystickButton amp = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
+        // private final JoystickButton amp = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
         private final JoystickButton limeDrive = new JoystickButton(driver, XboxController.Button.kRightBumper.value);
 
-        private final double speedcontrol = 0.75;
+        private final double speedcontrol = 0.7;
 
         public boolean gyroCheck;
         /**
@@ -107,6 +109,8 @@ public class RobotContainer {
 
                 NamedCommands.registerCommand("ArmZero", new TeleopArm(arm, intakePivot, 0, 0).withTimeout(2));
 
+                NamedCommands.registerCommand("ArmZero2.0", new TeleopArm(arm, intakePivot, 30, 0).withTimeout(2));
+
                 s_Swerve.setDefaultCommand(
                                 new TeleopSwerve(
                                                 s_Swerve,
@@ -138,6 +142,7 @@ public class RobotContainer {
         private void configureButtonBindings() {
                 /* Driver Buttons */
                 zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
+                
                 // IntakePos.onTrue(Commands.runOnce(()->{
                 // // Degrees
                 // Arm.setAngle(90);
@@ -160,6 +165,7 @@ public class RobotContainer {
                 .andThen(new ParallelCommandGroup(
                                 new TeleopIntake(intake, 1, 1, s_Swerve::getGyroCheck),
                                 new TeleopShooter(intake, 1, 1, s_Swerve::getGyroCheck))));
+                // Swerve swerve, Limelight limelight, IntakePivot intake, Arm arm, boolean amp
 
                 // PerimeterShot.onTrue(new ParallelCommandGroup(new TeleopArm(arm, intakePivot, -35, 0),
                 //                 (new TeleopIntake(intake, -0.1, 0.2, s_Swerve::getGyroCheck)
@@ -179,11 +185,13 @@ public class RobotContainer {
                 // IntakePos.onTrue(new TeleopArm(arm, intakePivot, -45, 99));
                 ArmZero.onTrue(new TeleopArm(arm, intakePivot, 0, 0));
 
-                amp.onTrue(new AmpArm(arm, intakePivot, climber, -40, 20, 100, s_Swerve::getAmpGyroCheck).withTimeout(1));
-                amp.onFalse(new TeleopIntake(intake, -0.3, 1, s_Swerve::getAmpGyroCheck)
-                .andThen(new AmpArm(arm, intakePivot, climber, 0, 0, 0, s_Swerve::getAmpGyroCheck).withTimeout(1)));
+                // amp.onTrue(new AmpArm(arm, intakePivot, climber, -40, 20, 100, s_Swerve::getAmpGyroCheck).withTimeout(1));
+                // amp.onFalse(new TeleopIntake(intake, -0.3, 1, s_Swerve::getAmpGyroCheck)
+                // .andThen(new AmpArm(arm, intakePivot, climber, 0, 0, 0, s_Swerve::getAmpGyroCheck).withTimeout(1)));
 
-                limeDrive.whileTrue(new TeleopLimelightDrive(s_Swerve, limelight, intakePivot, arm, false));
+                alignRButton.whileTrue(new TeleopLimelightDrive(s_Swerve, limelight, 1));
+
+                alignLButton.whileTrue(new TeleopLimelightDrive(s_Swerve, limelight, 0));
         }
 
         /**

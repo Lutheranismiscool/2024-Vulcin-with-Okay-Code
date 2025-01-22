@@ -21,54 +21,52 @@ public class TeleopLimelightDrive extends Command {
   ChassisSpeeds relativeSpeed;
   boolean gyro;
   int invert;
+  int align;
   /** Creates a new TeleopLimelightDrive. */
-  public TeleopLimelightDrive(Swerve swerve, Limelight limelight, IntakePivot intake, Arm arm, boolean amp) {
+  public TeleopLimelightDrive(Swerve swerve, Limelight limelight, int align) {
     this.swerve = swerve;
+    this.align = align;
     this.limelight = limelight;
-    this.intake = intake;
-    this.arm = arm;
-    this.amp = amp;
-    addRequirements(swerve, limelight, intake, arm);
+    addRequirements(swerve, limelight);
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    if(swerve.getHeading().getDegrees() >= -90 && swerve.getHeading().getDegrees() <= 90){
-      gyro = false;
-      invert = -1;
-    } else {
-      gyro = true;
-      invert = 1;
-    }
-    limelight.gyroControl(gyro);
+    // if(swerve.getHeading().getDegrees() >= -90 && swerve.getHeading().getDegrees() <= 90){
+    //   gyro = false;
+    //   invert = -1;
+    // } else {
+    //   gyro = true;
+    //   invert = 1;
+    // }
     limelight.limelightTagMode(true);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-        if(swerve.getHeading().getDegrees() >= -90 && swerve.getHeading().getDegrees() <= 90){
-          gyro = false;
-          invert = -1;
-        } else {
-          gyro = true;
-          invert = 1;
-        }
-        limelight.gyroControl(gyro);
-        SmartDashboard.putBoolean("gyroBool", gyro);
+        double strafeVal;
+        // if(swerve.getHeading().getDegrees() >= -90 && swerve.getHeading().getDegrees() <= 90){
+        //   invert = 1;
+        // } else {
+        //   invert = -1;
+        // }
             /* Get Values, Deadband*/
-        double translationVal = limelight.limelight_range_proportional() * invert;
-        double strafeVal = limelight.limelight_strafe_proportional() * invert;
+        // double translationVal = limelight.limelight_range_proportional() * invert;
+        if (align == '1') {
+          strafeVal = limelight.limelight_strafe_proportional() - 1;
+        } else {
+          strafeVal = limelight.limelight_strafe_proportional() + 1;
+        }
+          
+        // double strafeVal = limelight.limelight_strafe_proportional();
         // double rotationVal = limelight.limelight_aim_proportional();
-        relativeSpeed = new ChassisSpeeds(translationVal, strafeVal, 0);
+        relativeSpeed = new ChassisSpeeds(0, strafeVal, 0);
         /* Drive */
         swerve.driveRobotRelative(relativeSpeed);
-        if(amp != true) {
-          intake.setAngle((37)*invert, 0);
-          arm.setAngle((-10)*invert);
-        }
+
   }
 
   // Called once the command ends or is interrupted.
