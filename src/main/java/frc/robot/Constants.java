@@ -28,6 +28,9 @@ public final class Constants {
         public static final double wheelBase = Units.inchesToMeters(21.75); 
         public static final double wheelCircumference = chosenModule.wheelCircumference;
 
+        /* Map Constants */
+        public static final double alignOffset = 1; 
+
         /* Swerve Kinematics
          * No need to ever change this unless you are not doing a traditional rectangular/square 4 module swerve */
          public static final SwerveDriveKinematics swerveKinematics = new SwerveDriveKinematics(

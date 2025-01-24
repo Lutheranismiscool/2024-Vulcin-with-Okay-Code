@@ -4,6 +4,7 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -22,6 +23,8 @@ public class TeleopLimelightDrive extends Command {
   boolean gyro;
   int invert;
   int align;
+  Translation2d translation;
+  Translation2d translationCoordinates;
   /** Creates a new TeleopLimelightDrive. */
   public TeleopLimelightDrive(Swerve swerve, Limelight limelight, int align) {
     this.swerve = swerve;
@@ -42,12 +45,14 @@ public class TeleopLimelightDrive extends Command {
     //   invert = 1;
     // }
     limelight.limelightTagMode(true);
+    translationCoordinates = new Translation2d();
+    swerve.getLimelightPose();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-        double strafeVal;
+        // double strafeVal;
         // if(swerve.getHeading().getDegrees() >= -90 && swerve.getHeading().getDegrees() <= 90){
         //   invert = 1;
         // } else {
@@ -55,17 +60,30 @@ public class TeleopLimelightDrive extends Command {
         // }
             /* Get Values, Deadband*/
         // double translationVal = limelight.limelight_range_proportional() * invert;
-        if (align == '1') {
-          strafeVal = limelight.limelight_strafe_proportional() - 1;
+        double strafeProportional;
+        boolean strafeDisqualifier;
+        if (align == 1) {
+          // strafeVal = limelight.limelight_strafe_proportional() - 1;
+          strafeProportional = limelight.limelight_strafe_proportional();
+          strafeDisqualifier = true;
+          SmartDashboard.putNumber("strafeProportional", strafeProportional);
+          SmartDashboard.putBoolean("strafeDisqualifier", true);
+          SmartDashboard.putNumber("align", align);
         } else {
-          strafeVal = limelight.limelight_strafe_proportional() + 1;
+          // strafeVal = limelight.limelight_strafe_proportional() + 1;
+          strafeProportional = limelight.limelight_strafe_proportional();
+          strafeDisqualifier = false;
+          SmartDashboard.putNumber("strafeProportional", strafeProportional);
+          SmartDashboard.putBoolean("strafeDisqualifier", false);
+          SmartDashboard.putNumber("align", align);
         }
           
         // double strafeVal = limelight.limelight_strafe_proportional();
         // double rotationVal = limelight.limelight_aim_proportional();
-        relativeSpeed = new ChassisSpeeds(0, strafeVal, 0);
+        
+        // relativeSpeed = new ChassisSpeeds(0, strafeVal, 0);
         /* Drive */
-        swerve.driveRobotRelative(relativeSpeed);
+        swerve.drive(translationCoordinates, swerve.getLimelightPose().getRotation().getDegrees(), true, true);
 
   }
 
