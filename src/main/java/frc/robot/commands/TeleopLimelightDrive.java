@@ -4,10 +4,13 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.LimelightHelpers;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.IntakePivot;
 import frc.robot.subsystems.Limelight;
@@ -25,6 +28,7 @@ public class TeleopLimelightDrive extends Command {
   int align;
   Translation2d translation;
   Translation2d translationCoordinates;
+  Translation2d finalTranslation;
   /** Creates a new TeleopLimelightDrive. */
   public TeleopLimelightDrive(Swerve swerve, Limelight limelight, int align) {
     this.swerve = swerve;
@@ -37,16 +41,8 @@ public class TeleopLimelightDrive extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    // if(swerve.getHeading().getDegrees() >= -90 && swerve.getHeading().getDegrees() <= 90){
-    //   gyro = false;
-    //   invert = -1;
-    // } else {
-    //   gyro = true;
-    //   invert = 1;
-    // }
-    limelight.limelightTagMode(true);
-    translationCoordinates = new Translation2d();
-    swerve.getLimelightPose();
+    LimelightHelpers.setLEDMode_ForceOn("limelight-front");
+    // translationCoordinates = swerve.getLimelightPose();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -60,8 +56,31 @@ public class TeleopLimelightDrive extends Command {
         // }
             /* Get Values, Deadband*/
         // double translationVal = limelight.limelight_range_proportional() * invert;
+        Translation2d translationVector = new Translation2d(0, 0.5);
+        Rotation2d rotationVector = new Rotation2d(0);
+        Pose2d finalVector = new Pose2d(translationVector, rotationVector);
+        double translationAllowedX = 1;
+        double translationAllowedY = 0;
+        double translationCoordinatesX;
+        double translationCoordinatesY;
+
+    limelight.limelightTagMode(true);
+    swerve.getLimelightPose();
+    if (align == 1 | swerve.mt2Pose !=null) {
+    // translationCoordinates = swerve.mt2Pose.minus(finalVector);
+    translationCoordinatesX = swerve.mt2Pose.getX()-(translationAllowedX);
+    translationCoordinatesY = swerve.mt2Pose.getY()-(translationAllowedY);
+    translationCoordinates = new Translation2d(translationCoordinatesX, translationCoordinatesY);
+    finalTranslation = new Translation2d(translationCoordinates.getX(), translationVector.getY());
+    } else if (align == 0 | swerve.mt2Pose !=null) {
+    translationCoordinatesX = swerve.mt2Pose.getX()+(translationAllowedX);
+    translationCoordinatesY = swerve.mt2Pose.getY()+(translationAllowedY);
+    translationCoordinates = new Translation2d(translationCoordinatesX, translationCoordinatesY);
+    finalTranslation = new Translation2d(translationCoordinates.getX(), translationVector.getY());
+
         double strafeProportional;
         boolean strafeDisqualifier;
+        Translation2d translationDifference;
         if (align == 1) {
           // strafeVal = limelight.limelight_strafe_proportional() - 1;
           strafeProportional = limelight.limelight_strafe_proportional();
@@ -83,7 +102,8 @@ public class TeleopLimelightDrive extends Command {
         
         // relativeSpeed = new ChassisSpeeds(0, strafeVal, 0);
         /* Drive */
-        swerve.drive(translationCoordinates, swerve.getLimelightPose().getRotation().getDegrees(), true, true);
+        swerve.drive(finalTranslation, swerve.mt2Pose.getRotation().getDegrees(), true, true);
+      }
 
   }
 

@@ -27,7 +27,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
 import frc.robot.SwerveModule;
-import frc.robot.LimelightHelpers.PoseEstimate;
 
 public class Swerve extends SubsystemBase {
     public SwerveDriveOdometry swerveOdometry;
@@ -37,10 +36,13 @@ public class Swerve extends SubsystemBase {
     public static boolean ampGyroCheck;
     public static int ampMultiplierCheck;
     private boolean doRejectUpdate;
+    public SwerveDrivePoseEstimator m_poseEstimator;
+    public Pose2d mt2Pose;
     public Swerve() {
         gyro = new Pigeon2(Constants.Swerve.pigeonID, Constants.canBusName);
         gyro.getConfigurator().apply(new Pigeon2Configuration());
         gyro.setYaw(0);
+
 
         mSwerveMods = new SwerveModule[] {
                 new SwerveModule(0, Constants.Swerve.Mod0.constants),
@@ -104,24 +106,26 @@ StructArrayPublisher<SwerveModuleState> actualStatesPublisher = NetworkTableInst
                 mSwerveMods[3].getState());
     }
 
-    public SwerveDrivePoseEstimator m_poseEstimator =
-      new SwerveDrivePoseEstimator(
-          Constants.Swerve.swerveKinematics,
-          gyro.getRotation2d(),
-          new SwerveModulePosition[] {
-            mSwerveMods[0].getPosition(),
-            mSwerveMods[1].getPosition(),
-            mSwerveMods[2].getPosition(),
-            mSwerveMods[3].getPosition()
-          },
-                  new Pose2d(),
-          VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
-          VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
 
-            public Pose2d getLimelightPose() {
-
-    LimelightHelpers.SetRobotOrientation("limelight", m_poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
-      LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+public SwerveDrivePoseEstimator getPoseEstimator() {
+    m_poseEstimator =
+    new SwerveDrivePoseEstimator(
+        Constants.Swerve.swerveKinematics,
+        gyro.getRotation2d(),
+        new SwerveModulePosition[] {
+          mSwerveMods[0].getPosition(),
+          mSwerveMods[1].getPosition(),
+          mSwerveMods[2].getPosition(),
+          mSwerveMods[3].getPosition()
+        },
+                new Pose2d(),
+        VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
+        VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
+        return m_poseEstimator;
+    }
+            public void getLimelightPose() {
+    LimelightHelpers.SetRobotOrientation("limelight-front", getPoseEstimator().getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+      LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-front");
       if(Math.abs(gyro.getAngularVelocityZWorld().getValueAsDouble()) > 720) // if our angular velocity is greater than 720 degrees per second, ignore vision updates
       {
         doRejectUpdate = true;
@@ -134,9 +138,8 @@ StructArrayPublisher<SwerveModuleState> actualStatesPublisher = NetworkTableInst
       {
         m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.7,.7,9999999));
         m_poseEstimator.addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
-        return mt2.pose;
+        mt2Pose = mt2.pose;
       }
-      return null;
     }
     public void driveRobotRelative(ChassisSpeeds robotRelativeChassisSpeeds) {
         SwerveModuleState[] swerveModuleStates = Constants.Swerve.swerveKinematics
